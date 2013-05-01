@@ -13,7 +13,7 @@ client.on('navdata', function (chunk) {
     navDataStream.push({key: Date.now(), value: chunk});
 });
     
-// serving real-time data (maybe this should come first. is simpler)
+// Server real-time data from the helicopter, never-ending stream
 app.get('/rt', function(req, res){
   var stringify = new jsonStream.stringify();
   navDataStream.pipe(stringify).pipe(res); 
