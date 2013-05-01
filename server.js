@@ -48,7 +48,7 @@ app.get('/historical', function(req, res){
 
 // Now real challenge - serve historical AND realtime data
 app.get('/oldAndFuture', function (req, res) {
-  var stringify = new jsonStream.stringify(false);
+  var stringify = new jsonStream.stringify();
   var dbStream = db.createReadStream();
   dbStream.pipe(stringify).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
