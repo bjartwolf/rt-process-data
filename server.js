@@ -22,30 +22,30 @@ app.get('/rt', function(req, res){
 app.listen(3000);
 
 // sending data when you have no chopper
+var counter = 1000;
 setInterval(function () {
-     client.emit('navdata', {height: 1000});
+     client.emit('navdata', {height: counter++});
 }, 100);
 
 // Creating or opening the database
 var levelup = require('levelup');
 var db = levelup('./navdataDB', {valueEncoding: "json"});
 
+// write real-time data to database
 navDataStream.pipe(db.createWriteStream());
 
 app.get('/historical', function(req, res){
   var stringify = new jsonStream.stringify();
-  db.createReadStream({end: Date.now()}).pipe(stringify).pipe(res); 
+  var dbStream = db.createReadStream();
+  dbStream.pipe(stringify).pipe(res); 
 });
-
-
 
 // Now real challenge - serve historical AND realtime data
 app.get('/oldAndFuture', function (req, res) {
   var stringify = new jsonStream.stringify();
-  var dbStream = db.createReadStream({end: Date.now()});
-  dbStream.pipe(stringify).pipe(res, {end: false}); 
-  dbStream.on('end', function () { 
-    //might not be perfect just yet... Need to pipe it somewhere first where it can buffer
+  var dbStream = db.createReadStream();
+  dbStream.pipe(stringify).pipe(res, {end: false}); // Do not emit end, http stream will close  
+  dbStream.on('end', function () { // Rather, on end, start piping the real-time data
     navDataStream.pipe(stringify).pipe(res); 
   });
 });
