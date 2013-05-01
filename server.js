@@ -6,15 +6,17 @@ var db = levelup('./navdataDB', {valueEncoding: "json"});
 var stream = require('stream');
 var arDrone = require('ar-drone');
 var client = arDrone.createClient();
-NavDataStream.prototype = Object.create(stream.Read.prototype, {
-  constructor: { value: NavDataStream}}
-});
-function NavDataStream() {
-    stream.Readable.call(this, {objectMode: true});
-} 
-var navDataStream = new NavDataStream(); 
-client.on('navdata', function (data) {
-    navDataStream.push(data);
+
+var navDataStream = new stream.Readable(); 
+// It's no use asking me
+navDataStream._read = function () {};
+client.on('navdata', function (chunk) {
+    navDataStream.push(chunk);
 });
     
-navDataStream(db.createWriteStream()).
+navDataStream.pipe(db.createWriteStream());
+navDataStream.pipe(process.stdout);
+
+setInterval(function () {
+     client.emit('navdata', '1');
+}, 1000);
