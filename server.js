@@ -48,6 +48,8 @@ app.get('/historical', function(req, res){
 
 // Now real challenge - serve historical AND realtime data
 app.get('/oldAndFuture', function (req, res) {
+  // Adding false here makes the stream not end properly too...
+  // this causes some issues.
   var stringify = new jsonStream.stringify();
   var dbStream = db.createReadStream();
   dbStream.pipe(stringify).pipe(res, {end: false}); // Do not emit end, http stream will close  
