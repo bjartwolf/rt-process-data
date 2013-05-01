@@ -18,18 +18,17 @@ navDataStream.pipe(db.createWriteStream());
 //navDataStream.pipe(process.stdout);
 
 setInterval(function () {
-     client.emit('navdata', '1');
+     client.emit('navdata', {height: 1000});
 }, 1000);
 
 // adding express (considering append only code presentation style)
 var express = require('express');
 var app = express();
+var jsonStream = require('JSONStream');
 
-app.get('/', function(req, res){
-  res.write('here comes the data');
-//  db.createReadStream().pipe(res); // need to json serialize for http
-  db.createKeyStream().pipe(res);
+app.get('/historical', function(req, res){
+  var stringify = new jsonStream.stringify();
+  db.createReadStream({end: Date.now()}).pipe(stringify).pipe(res); // need to json serialize for http
 });
 
 app.listen(3000);
-
