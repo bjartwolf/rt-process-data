@@ -18,7 +18,7 @@ navDataStream.pipe(db.createWriteStream());
 
 setInterval(function () {
      client.emit('navdata', {height: 1000});
-}, 1000);
+}, 100);
 
 // adding express (considering append only code presentation style)
 var express = require('express');
@@ -31,3 +31,12 @@ app.get('/historical', function(req, res){
 });
 
 app.listen(3000);
+
+
+// serving real-time data (maybe this should come first. is simpler)
+app.get('/rt', function(req, res){
+  var stringify = new jsonStream.stringify();
+  navDataStream.pipe(stringify).pipe(res); 
+});
+
+
