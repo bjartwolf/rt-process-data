@@ -15,7 +15,6 @@ client.on('navdata', function (chunk) {
 });
     
 navDataStream.pipe(db.createWriteStream());
-//navDataStream.pipe(process.stdout);
 
 setInterval(function () {
      client.emit('navdata', {height: 1000});
@@ -28,7 +27,7 @@ var jsonStream = require('JSONStream');
 
 app.get('/historical', function(req, res){
   var stringify = new jsonStream.stringify();
-  db.createReadStream({end: Date.now()}).pipe(stringify).pipe(res); // need to json serialize for http
+  db.createReadStream({end: Date.now()}).pipe(stringify).pipe(res); 
 });
 
 app.listen(3000);
