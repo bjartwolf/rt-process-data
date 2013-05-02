@@ -1,5 +1,6 @@
 // Creating a webserver
 var express = require('express');
+var Buffer = require('./bufferStream');
 var app = express();
 app.listen(3000);
 
@@ -8,7 +9,7 @@ var stream = require('stream');
 var arDrone = require('ar-drone');
 var client = arDrone.createClient();
 
-var serializer = require('./serializer'); 
+var Serializer = require('./serializer'); 
 
 // Creating a stream that emits a timestamped navigationdata object 
 var navDataStream = new stream.Readable({objectMode: true}); 
@@ -22,7 +23,7 @@ client.on('navdata', function (chunk) {
 // Server real-time data from the helicopter, never-ending stream
 app.get('/rt', function(req, res){
   // The stringify(false) is a configuration to only have newline separation between elements
-  navDataStream.pipe(new serializer()).pipe(res); 
+  navDataStream.pipe(new Serializer()).pipe(res); 
 });
 
 // Simulates the helicopter creating some data 
@@ -41,29 +42,22 @@ navDataStream.pipe(db.createWriteStream());
 // Service historical data
 app.get('/historical', function(req, res){
   var dbStream = db.createReadStream();
-  dbStream.pipe(new serializer()).pipe(res); 
+  dbStream.pipe(new Serializer()).pipe(res); 
 });
 
 app.get('/oldAndFuture', function (req, res) {
   // Adding false here makes the stream not end properly too...
   // this causes some issues.
   var timeStamp = Date.now();
-  var bufferStream = new stream.Transform({objectMode: true}); 
-  var resume; 
-  bufferStream._transform = function (chunk, encoding, done ) { 
-      this.push(chunk); 
-      if (!resume) {
-          resume = done;
-      } else {
-          done();
-      }
-  };
-  var dbStream = db.createReadStream( {end: timeStamp});
+  var bufferStream = new Buffer(); 
   navDataStream.pipe(bufferStream); //Takes all events from now on into buffer
-  dbStream.pipe(new serializer()).pipe(res, {end: false}); // Do not emit end, http stream will close  
+
+  var dbStream = db.createReadStream( {end: timeStamp});
+
+  dbStream.pipe(new Serializer()).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
-    resume();
+    bufferStream.start();
+    bufferStream.pipe(new Serializer()).pipe(res); 
     res.write('\nswitching \n');
-    bufferStream.pipe(new serializer()).pipe(res); 
   });
 });
