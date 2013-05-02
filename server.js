@@ -53,25 +53,20 @@ app.get('/oldAndFuture', function (req, res) {
   var timeStamp = Date.now();
   var bufferStream = new stream.Transform({objectMode: true}); 
   var resume; 
-  var switched = false;
   bufferStream._transform = function (chunk, encoding, done ) { 
       this.push(chunk); 
-      if (switched) {
-        done() 
-      } else {
-        if (!resume) {
+      if (!resume) {
           resume = done;
-        }
+      } else {
+          done();
       }
   };
   navDataStream.pipe(bufferStream); 
   var dbStream = db.createReadStream( {end: timeStamp});
   dbStream.pipe(stringify).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
-    switched = true;
     resume();
     res.write('switching \n');
     bufferStream.pipe(stringify).pipe(res); 
   });
 });
-
