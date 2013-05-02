@@ -1,7 +1,10 @@
+// Stringifies a JSON stream
+// var Serializer = require('./serializer') 
+// jsonObjectsExampleStream.pipe(new Serializer()).pipe(...
+// Remember to create a new stream for each serializer, they can't
+// be shared
+
 var stream = require('stream');
-//Takes a steam of object and selects one key in the objectream and
-//prints that key's value.
-//Could throw an error... but it doesn't
 
 serializer.prototype = Object.create(stream.Transform.prototype, {
   constructor: { value: serializer}
