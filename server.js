@@ -30,7 +30,7 @@ app.get('/rt', function(req, res){
 var height = 1000;
 setInterval(function () {
      client.emit('navdata', {height: height++});
-}, 100);
+}, 1);
 
 // Creating or opening the database
 var levelup = require('levelup');
@@ -46,15 +46,32 @@ app.get('/historical', function(req, res){
   dbStream.pipe(stringify).pipe(res); 
 });
 
-// Now real challenge - serve historical AND realtime data
 app.get('/oldAndFuture', function (req, res) {
   // Adding false here makes the stream not end properly too...
   // this causes some issues.
   var stringify = new jsonStream.stringify();
-  var dbStream = db.createReadStream();
+  var timeStamp = Date.now();
+  var bufferStream = new stream.Transform({objectMode: true}); 
+  var resume; 
+  var switched = false;
+  bufferStream._transform = function (chunk, encoding, done ) { 
+      this.push(chunk); 
+      if (switched) {
+        done() 
+      } else {
+        if (!resume) {
+          resume = done;
+        }
+      }
+  };
+  navDataStream.pipe(bufferStream); 
+  var dbStream = db.createReadStream( {end: timeStamp});
   dbStream.pipe(stringify).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
-    navDataStream.pipe(stringify).pipe(res); 
+    switched = true;
+    resume();
+    res.write('switching \n');
+    bufferStream.pipe(stringify).pipe(res); 
   });
 });
 
