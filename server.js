@@ -38,7 +38,7 @@ navDataStream.pipe(db.createWriteStream());
 // end of example 2
 
 // Serve historical data
-app.get('/historical', function(req, res){
+app.get('/history', function(req, res){
   var dbStream = db.createReadStream();
   dbStream.pipe(new Serializer()).pipe(res); 
 });
@@ -48,7 +48,7 @@ app.get('/historical', function(req, res){
 // We buffer the realtime data until all history has been sent
 var Buffer = require('./bufferStream');
 
-app.get('/oldAndFuture', function (req, res) {
+app.get('/historyAndRt', function (req, res) {
   var timeStamp = Date.now();
   var bufferStream = new Buffer(); 
   navDataStream.pipe(bufferStream);
