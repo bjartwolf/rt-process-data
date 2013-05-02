@@ -8,11 +8,8 @@ var stream = require('stream');
 var arDrone = require('ar-drone');
 var client = arDrone.createClient();
 
-var serializer = new stream.Transform({objectMode: true}); 
-serializer._transform = function (chunk, encoder, done) {
-    this.push(JSON.stringify(chunk));
-    done();
-};
+var serializer = require('./serializer'); 
+
 // Creating a stream that emits a timestamped navigationdata object 
 var navDataStream = new stream.Readable({objectMode: true}); 
 // I do nothing on underlying resource when asked for data 
@@ -25,7 +22,7 @@ client.on('navdata', function (chunk) {
 // Server real-time data from the helicopter, never-ending stream
 app.get('/rt', function(req, res){
   // The stringify(false) is a configuration to only have newline separation between elements
-  navDataStream.pipe(serializer).pipe(res); 
+  navDataStream.pipe(new serializer()).pipe(res); 
 });
 
 // Simulates the helicopter creating some data 
@@ -44,7 +41,7 @@ navDataStream.pipe(db.createWriteStream());
 // Service historical data
 app.get('/historical', function(req, res){
   var dbStream = db.createReadStream();
-  dbStream.pipe(serializer).pipe(res); 
+  dbStream.pipe(new serializer()).pipe(res); 
 });
 
 app.get('/oldAndFuture', function (req, res) {
@@ -63,10 +60,10 @@ app.get('/oldAndFuture', function (req, res) {
   };
   var dbStream = db.createReadStream( {end: timeStamp});
   navDataStream.pipe(bufferStream); //Takes all events from now on into buffer
-  dbStream.pipe(serializer, {end:false}).pipe(res); // Do not emit end, http stream will close  
+  dbStream.pipe(new serializer()).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
     resume();
     res.write('\nswitching \n');
-    bufferStream.pipe(serializer).pipe(res); 
+    bufferStream.pipe(new serializer()).pipe(res); 
   });
 });
