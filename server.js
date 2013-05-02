@@ -45,6 +45,7 @@ app.get('/historical', function(req, res){
   dbStream.pipe(new Serializer()).pipe(res); 
 });
 
+// Server realtime data
 app.get('/oldAndFuture', function (req, res) {
   // Adding false here makes the stream not end properly too...
   // this causes some issues.
@@ -56,8 +57,8 @@ app.get('/oldAndFuture', function (req, res) {
 
   dbStream.pipe(new Serializer()).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
+    res.write('\nswitching \n');
     bufferStream.start();
     bufferStream.pipe(new Serializer()).pipe(res); 
-    res.write('\nswitching \n');
   });
 });

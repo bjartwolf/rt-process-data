@@ -17,7 +17,6 @@
   "dependencies": {
     "ar-drone": "0.0.5",
     "levelup": "~0.8.0",
-    "express": "~3.2.1",
-    "JSONStream": "~0.6.4"
+    "express": "~3.2.1"
   }
 }
