@@ -25,7 +25,7 @@ app.get('/rt', function(req, res){
 var height = 1000;
 setInterval(function () {
      client.emit('navdata', {height: height++});
-}, 50);
+}, 5);
 
 // End of example 1
 
