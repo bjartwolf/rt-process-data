@@ -1,7 +1,8 @@
 var stream = require('stream');
-//Takes a steam of object and selects one key in the objectream and
-//prints that key's value.
-//Could throw an error... but it doesn't
+// Creates a paused stream.
+// var Buffer = require('./buffer');
+// var buffer = new Buffer();
+// Call buffer.start() to start streaming out data
 
 buffer.prototype = Object.create(stream.Transform.prototype, {
   constructor: { value: buffer}
