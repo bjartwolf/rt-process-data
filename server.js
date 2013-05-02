@@ -1,6 +1,5 @@
 // Creating a webserver
 var express = require('express');
-var Buffer = require('./bufferStream');
 var app = express();
 app.listen(3000);
 
@@ -13,13 +12,13 @@ var Serializer = require('./serializer');
 
 // Creating a stream that emits a timestamped navigationdata object 
 var navDataStream = new stream.Readable({objectMode: true}); 
-// I do nothing on underlying resource when asked for data 
 navDataStream._read = function () {};
+// I do nothing on underlying resource when asked for data 
 // But the drone pushes data into the stream when it has data 
 client.on('navdata', function (chunk) {
     navDataStream.push({key: Date.now(), value: chunk});
 });
-    
+
 // Server real-time data from the helicopter, never-ending stream
 app.get('/rt', function(req, res){
   // The stringify(false) is a configuration to only have newline separation between elements
@@ -30,7 +29,8 @@ app.get('/rt', function(req, res){
 var height = 1000;
 setInterval(function () {
      client.emit('navdata', {height: height++});
-}, 1);
+}, 50);
+
 
 // Creating or opening the database
 var levelup = require('levelup');
@@ -46,6 +46,7 @@ app.get('/historical', function(req, res){
 });
 
 // Server realtime data
+var Buffer = require('./bufferStream');
 app.get('/oldAndFuture', function (req, res) {
   // Adding false here makes the stream not end properly too...
   // this causes some issues.
@@ -57,7 +58,7 @@ app.get('/oldAndFuture', function (req, res) {
 
   dbStream.pipe(new Serializer()).pipe(res, {end: false}); // Do not emit end, http stream will close  
   dbStream.on('end', function () { // Rather, on end, switch stream and start piping the real-time data
-    res.write('\nswitching \n');
+    res.write('\n Switching to real-time stream \n');
     bufferStream.start();
     bufferStream.pipe(new Serializer()).pipe(res); 
   });

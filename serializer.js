@@ -11,7 +11,7 @@ function serializer() {
    stream.Transform.call(this, {objectMode: true}); 
 }
 
-serializer.prototype._transform = function(chunk, encoding, done) { 
+serializer.prototype._transform = function(chunk, enc, done) { 
    this.push(JSON.stringify(chunk)); 
    done();
 };
