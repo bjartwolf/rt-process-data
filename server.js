@@ -49,18 +49,15 @@ app.get('/history', function(req, res){
 var Buffer = require('./bufferStream');
 
 app.get('/historyAndRt', function (req, res) {
-  var timeStamp = Date.now();
   var bufferStream = new Buffer(); 
   navDataStream.pipe(bufferStream);
-
-  var dbStream = db.createReadStream( {end: timeStamp});
-
+  var dbStream = db.createReadStream( {end: Date.now()});
   // DbStream must not emit end because http stream will then be closed 
   dbStream.pipe(new Serializer()).pipe(res, {end: false});
   dbStream.on('end', function () {
     res.write('\n Switching to real-time stream \n');
-    bufferStream.start();
     bufferStream.pipe(new Serializer()).pipe(res); 
+    bufferStream.start();
   });
 });
 
