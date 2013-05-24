@@ -7,7 +7,7 @@ Code featured in my NDC2013 magazine article
 
 This article was mostly inspired by
 
-[Substack's streams handbook](https://github.com/substack/stream-handbook)
+[Substack's streams handbook](https://github.com/substack/stream-handbook) I guess I took more than a little inspiration from here, like borrowing some quotes and so on.
 
 [NodeCopter](http://nodecopter.com/)
 
