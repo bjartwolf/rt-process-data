@@ -1,11 +1,16 @@
-This is the code featured in my NDC2013 magazine article
-========================================================
+Code featured in my NDC2013 magazine article
+============================================
+
 ![Magazine image](http://www.programutvikling.no/images//TheDeveloper/The%20Developer%202nd%20edition.jpg)
+
 [Link to magazine](http://www.programutvikling.no/artikkel/om-oss/the-developer/2613)
 
 This article was mostly inspired by
+
 [Substack's streams handbook](https://github.com/substack/stream-handbook)
+
 [NodeCopter](http://nodecopter.com/)
+
 
 
 Install
