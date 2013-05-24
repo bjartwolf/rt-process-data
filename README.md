@@ -11,7 +11,7 @@ This article was mostly inspired by
 
 [NodeCopter](http://nodecopter.com/)
 
-
+And thanks to [einarwh](https://twitter.com/einarwh) for helping me with the text.
 
 Install
 -------
