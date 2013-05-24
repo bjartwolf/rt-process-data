@@ -7,16 +7,20 @@ var arDrone = require('ar-drone');
 var client = arDrone.createClient();
 var Serializer = require('./serializer'); 
 
-// Creating a stream that emits a timestamped navigationdata object 
-var navDataStream = new stream.Readable({objectMode: true}); 
-// Do nothing on underlying resource when asked for data 
+// Stream that emits timestamped navigation data 
+var navDataStream = new stream.Readable(
+    {objectMode: true}); 
+// Do nothing when asked to read
 navDataStream._read = function () {};
-// Instead the drone pushes data into the stream when it has data 
+// Instead drone pushes data into the stream 
 client.on('navdata', function (chunk) {
-    navDataStream.push({key: Date.now(), value: chunk});
+    navDataStream.push({
+        key: Date.now(),
+        value: chunk});
 });
-
-// Serve real-time data from the drone in a never-ending stream
+//navDataStream.pipe(new Serializer()).
+//    pipe(process.stdout);
+// Serve rt-data in never-ending stream
 app.get('/rt', function(req, res){
   navDataStream.pipe(new Serializer()).pipe(res); 
 });
@@ -31,7 +35,8 @@ setInterval(function () {
 
 var levelup = require('levelup');
 // Open database, create if not exists
-var db = levelup('./navdataDB', {valueEncoding: "json"});
+var db = levelup('./navdataDB', {
+    valueEncoding: "json"});
 
 // write real-time data to database
 navDataStream.pipe(db.createWriteStream());
@@ -44,16 +49,18 @@ app.get('/history', function(req, res){
 });
 // End of example 3
 
-// Server realtime and historical data in the same request
-// We buffer the realtime data until all history has been sent
+// Serve rt and historical data in same request
+// Buffer the rt data until history has been sent
 var Buffer = require('./bufferStream');
 
 app.get('/historyAndRt', function (req, res) {
   var bufferStream = new Buffer(); 
   navDataStream.pipe(bufferStream);
-  var dbStream = db.createReadStream( {end: Date.now()});
-  // DbStream must not emit end because http stream will then be closed 
-  dbStream.pipe(new Serializer()).pipe(res, {end: false});
+  var dbStream = db.createReadStream({
+        end: Date.now()});
+  // Must not emit end, http stream will be closed 
+  dbStream.pipe(new Serializer()).pipe(res, {
+                    end: false});
   dbStream.on('end', function () {
     res.write('\n Switching to real-time stream \n');
     bufferStream.pipe(new Serializer()).pipe(res); 
